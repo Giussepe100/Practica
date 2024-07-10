@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/iniciosesion.css') }}">
+  
+    
+  
+  <title>Inicio de sesion </title>
+</head>
+<body>
+  <form action="/BuscarUsuario" method="POST">
+    <section class="form-register">
+       <h4>Inicio de sesion</h4>
+       <input class="controls" type="text" name="username" placeholder="Ingrese su nombre de usuario">
+       <input class="controls" type="password" name="contrasena"  placeholder="Ingrese su Contraseña">
+       <div class="botons">
+			   <input type="submit" value="Iniciar Sesion" />
+       </div>
+       <br>
+
+       <div class="botons">
+        <input type="button" value="Registrar usuario" onclick="redirigir1(event)"/>
+       </div>
+    
+        <div class="botons">
+          <input type="button" value="Ingresar como invitado" onclick="redirigir(event)"/>
+         </div>
+    </section>
+      
+ </form>
+  
+ {% if valor==0 %}
+     <script>
+       window.onload = function() {
+        alert("usuario no encontrado")};
+     </script>
+
+  {%endif%}
+
+
+  <script>
+    function redirigir()
+    {
+      window.location.href = "{{ url_for('Redirigir') }}";
+    }
+    
+    function redirigir1()
+    {
+      window.location.href = "{{ url_for('IrRegistroUsuario') }}";
+    }
+  
+  </script>
+</body>
+</html>
