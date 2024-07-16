@@ -1,0 +1,36 @@
+/* Header styles */
+.contenedor-header {
+    position: fixed; /* Fija el navbar en la parte superior de la página */
+    top: 0; /* Posiciona el navbar en la parte superior de la página */
+    width: 100%; /* Ancho del navbar */
+    background-color: #000; /* Fondo negro */
+    padding: 10px; /* Espacio entre el contenido y el borde del navbar */
+    z-index: 1000;
+}
+  
+.contenedor-header  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+  }
+  
+  .contenedor-header  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+  
+  .contenedor-header  nav li {
+    margin-right: 20px;
+  }
+  
+  .contenedor-header  nav a {
+    color: #fff; /* Texto blanco */
+    text-decoration: none;
+  }
+  
+  .contenedor-header  nav a:hover {
+    color: #ccc; /* Texto gris claro al pasar el mouse */
+  }

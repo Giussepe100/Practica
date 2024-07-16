@@ -4,7 +4,8 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color:#061524;
+    /*background-color:#061524;*/
+    background-image: url('../imagenes/Fondo.png');
 }
 
 .container {
@@ -28,7 +29,7 @@ input[type="text"] {
 }
 
 button {
-    background-color: #4CAF50;
+    background-color: #2b4ec0;
     color: white;
     padding: 12px 20px;
     margin-bottom: 20px;
@@ -38,7 +39,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #2b4ec0;
 }
 
 .recommendations {
@@ -53,32 +54,10 @@ button:hover {
     border-radius: 4px;
 }
 
-nav{
-    display:flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 20px;
-    padding-left: 5%;
-    padding-right: 5%;
-    font-weight: bold;
-}
-
-h1{
-    color:white;
-    font-size: 45px;
-
-}
-
-ul li{
-    display: inline-block;
-    padding: 0px 20px;
-}
-
-a{
-    color:white;
-    text-decoration:none 
-}
-
-a:hover{
-    color:aqua
+#tipoPelicula{
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
