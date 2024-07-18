@@ -122,7 +122,7 @@ def MostrarDirectoresXTipoPelicula(tipoPelicula):
         return ResultadoPelicula
     else:
         return ResultadoPelicula[:5]
-#wdd dddsf dd
+#wdd dddsf ddd
 def get_pelicula_trabajado_director(nombredirector):
     #filtrar el dataframe por el nombre del director 
     global org_movies
