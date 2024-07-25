@@ -14,14 +14,15 @@ org_movies=pd.read_csv(ruta_archivo)
 #leo el archivo csv de usuarios
 ruta_archivo1='Practica/app/usuarios.csv'
 usuarios=pd.read_csv(ruta_archivo1)
-
-
+#ruta archivo csv usuarios_peliculas.csv
+ruta_archivo2='Practica/app/usuarios_peliculas.csv'
+peliculas_historial=pd.read_csv(ruta_archivo2)
 #se mantienen las columnas importantes 
 movies = org_movies[[ 'genres','homepage','vote_average','cast','director','title']]
 
 
 movies.fillna('',inplace=True)
-
+#movies.loc[:,:]=movies.loc[:,:].fillna('')
 #creo una columna llamada funciones combinadas
 movies['combined_features'] = movies['genres'] +' '+ movies['homepage']+' '+ str(movies['vote_average']) +' '+ movies['cast']+' '+ movies['director']+' '+movies['title']
 movies.iloc[0]['combined_features']
@@ -47,7 +48,7 @@ def get_index_from_movie_name(name):
     
 #mostrar informacion de una pelicula
 def get_information_pelicula(name):
-    return org_movies.loc[movies['title']==name]
+    return org_movies.loc[movies['title']==name]#busca el nombre de la pelicula y y devuelve toda su fila 
 #buscar usuario
 def buscar_usuario(username, contrasena):
     usuario = usuarios[usuarios['username'] == username]  # Verifica nombres de usuario coincidentes
@@ -56,7 +57,6 @@ def buscar_usuario(username, contrasena):
         return 0  # Usuario no encontrado
     else:
         #return usuario
-        print(usuario['user_id'].values[0])
         return usuario['user_id'].values[0]  # Usuario encontrado
         
        
@@ -134,6 +134,43 @@ def get_pelicula_trabajado_director(nombredirector):
         nombres_peliculas=peliculas['title'].tolist()
         return nombres_peliculas[:5]
     
+def buscamos_usuarioId_ArchivoCsv(user_id):
+    global peliculas_historial
+    #filtramos el dataframe por el codigo de la pelicula
+    #i Busca las filas que tienen el user_id especifico
+    indice_peliculas_vistas = peliculas_historial.loc[peliculas_historial['user_id'] == user_id]
+    
+    if indice_peliculas_vistas.empty:
+        lista_indices_peliculas=[]
+    else:
+        lista_indices_peliculas = indice_peliculas_vistas['index'].tolist()
+    # Obten los índices de esas filas
+    
+    return lista_indices_peliculas
+
+def get_information_pelicula_ID(idPelicula):
+    return org_movies.loc[org_movies['index']==idPelicula]
+
+
+def AgregarArchivoCSVPeliculavista(nombre_archivo1,nueva_fila_historial):
+    global peliculas_historial
+
+    if peliculas_historial.empty:
+        CodUsuarioPelicula=1
+    else:
+        peliculas_historial['CodUsuarioPelicula']=pd.to_numeric(peliculas_historial['CodUsuarioPelicula'],errors='coerce')
+        ultimo_id=peliculas_historial['CodUsuarioPelicula'].max()
+        if pd.isna(ultimo_id):
+            CodUsuarioPelicula=1
+        else:
+            CodUsuarioPelicula=int(ultimo_id)+1
+    
+    #Agrego el nuevo usuario al Dataframe
+    nueva_fila_historial['CodUsuarioPelicula']=CodUsuarioPelicula
+    peliculas_historial=pd.concat([peliculas_historial,pd.DataFrame([nueva_fila_historial])],ignore_index=True)
+    #Escribo el Data frame actualizado al archivo CSV
+    peliculas_historial.to_csv(nombre_archivo1, index=False)
+
 
 Lista_peliculas=list(movies['title'])
 lista_peliculas_similares=Lista_peliculas[:5]
@@ -198,7 +235,16 @@ def MostrarPeliculasSimilares():
     
 @app.route('/ExtraerInformacionPelicula/<string:nombre_pelicula>') 
 def  ExtraerInformacionPelicula(nombre_pelicula):
+    user=session.get('user')
+    user_id=user['user_id']
     fila_pelicula=get_information_pelicula(nombre_pelicula)
+    if 'lista_peliculas_vistas' not in session:
+        session['lista_peliculas_vistas']=[]
+    session['lista_peliculas_vistas'].append(fila_pelicula['title'].iloc[0])
+    session.modified=True
+    nueva_fila_historial={'index':fila_pelicula['index'].iloc[0],'user_id':user_id}
+    global ruta_archivo2
+    AgregarArchivoCSVPeliculavista(ruta_archivo2,nueva_fila_historial)
     return render_template("InformacionPelicula.html",fila_pelicula=fila_pelicula)#Lo que le estoy enviando es un dataframe
 
 @app.route('/BuscarUsuario',methods=['GET','POST'])
@@ -207,12 +253,14 @@ def BuscarUsuario():
         username=request.form['username']
         contrasena=request.form['contrasena']
        
-        valor=buscar_usuario(username,contrasena)
-        if valor!=0:
-            session['user']={'username':username,'contrasena':contrasena}
+        valor_id_usuario=buscar_usuario(username,contrasena)
+        if valor_id_usuario!=0:
+            
+            session['user']={'username':username,'contrasena':contrasena,'user_id':int(valor_id_usuario)}
+            session['lista_peliculas_vistas']=[]
             return render_template("Recomendacion.html",lista_peliculas_similares=lista_peliculas_similares)
         else:
-            return render_template("Inicio_Sesion.html",valor=valor)
+            return render_template("Inicio_Sesion.html",valor_id_usuario=valor_id_usuario)
     else:
         return "error"
 
@@ -250,15 +298,14 @@ def ExtraerTipoPelicula():
 @app.route('/ExtraerInformacionUsuario', methods=['GET','POST']) 
 def  ExtraerInformacionUsuario():
     user=session.get('user')
-    username=user['username']
-    contrasena=user['contrasena']
-    usuario_id=buscar_usuario(username,contrasena)
+    usuario_id=user['user_id']
     user_data=BuscarPorIdUser(usuario_id)
     return render_template("InformacionUsuario.html",user_data=user_data)
 
 @app.route('/logout', methods=['GET','POST']) 
 def  logout():
-    session.pop('username',None)
+    session.pop('lista_peliculas_vistas',None)
+    session.pop('user',None) 
     return render_template("Inicio_Sesion.html")
 
 @app.route('/EditarDatosUsuario', methods=['GET','POST'])
@@ -298,6 +345,40 @@ def  BusquedaPeliculasDirector(nombre_director):
     lista_peliculas_similares.clear()
     lista_peliculas_similares=get_pelicula_trabajado_director(nombre_director)
     return render_template("Recomendacion.html",lista_peliculas_similares=lista_peliculas_similares)
+
+"""Modificar esto """
+@app.route('/Ver_Historial_Peliculas_Usuario' ,methods=['GET','POST'])
+def Ver_Historial_Peliculas_Usuario():
+    
+    user=session.get('user')
+    usuario_id=user['user_id']
+    #miramos si ha  iniciado session 
+    if 'lista_indice_finPeliculas' not in session:
+        session['lista_indice_finPeliculas']=[]
+
+    if not session['lista_peliculas_vistas']:#si la lista esta vacia 
+        session['lista_indice_finPeliculas'] = buscamos_usuarioId_ArchivoCsv(usuario_id)#pasamos los datos
+        lista_peliculas_vistas=llenarlistapeliculasVistas()
+        return render_template("Historial_Peliculas.html",lista_peliculas_vistas=lista_peliculas_vistas)
+    else:
+           session['lista_peliculas_vistas'].clear()
+           session['lista_indice_finPeliculas'] = buscamos_usuarioId_ArchivoCsv(usuario_id)
+           lista_peliculas_vistas=llenarlistapeliculasVistas()
+
+           return render_template("Historial_Peliculas.html",lista_peliculas_vistas=lista_peliculas_vistas)
+        
+        
+@app.route('/llenarlistapeliculasVistas' ,methods=['GET','POST'])
+def llenarlistapeliculasVistas():
+    if 'lista_peliculas_vistas' not in session:
+        session['lista_peliculas_vistas'] = []
+    else:
+        for x in session['lista_indice_finPeliculas']:
+           fila_pelicula_encontrada=get_information_pelicula_ID(x)
+           session['lista_peliculas_vistas'].append(fila_pelicula_encontrada['title'].iloc[0])
+           session.modified=True
+        return session['lista_peliculas_vistas']
+
 if __name__=='__main__':
     app.run(debug=True,port=5000)
 

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial Películas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/recomendacion.css') }}">
+    
+    
+</head>
+<body>
+    {% include 'header.html'%}
+    <div class="container">
+        <h2>Historial de Películas</h2>
+        
+        
+        {% if lista_peliculas_vistas %}
+           {% for c in lista_peliculas_vistas%}
+               <div class="recommendations">
+                  <a href="{{ url_for('ExtraerInformacionPelicula',nombre_pelicula=c) }}"> <div class="recommendation">{{c}}</div> </a>
+                
+               </div>
+           
+          {%endfor%}
+     {%else%}
+            <h2>Busque la información de una película para que se guarde en el historial </h2>
+      
+     {%endif%}
+
+    </div>
+</body>
+</html>
